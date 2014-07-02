@@ -39,12 +39,13 @@ class Map
 	best_value = Float::MAX
 	best_index = -1
 	for start_point in 0..range do
+	    value = 0
 	    for column in 0..@sample[0].length - 1 do
-		value = @measure.compare(@data, @sample, start_point, column)
-		if (value < best_value)
-		    best_value = value
-		    best_index = start_point
-		end
+		value += @measure.compare(@data, @sample, start_point, column)
+	    end
+	    if (value < best_value)
+		best_value = value
+		best_index = start_point
 	    end
 	end    
 	{:index => best_index, :value => best_value, :data => @data}
