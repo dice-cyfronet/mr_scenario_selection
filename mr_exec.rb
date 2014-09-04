@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby 
 
 require 'docopt'
-require 'pp'
 load 'mr.rb'
 
 doc = <<DOCOPT
