@@ -3,23 +3,23 @@ require 'csv'
 
 class MapReduce
     
-    attr_accessor :sample, :mapped, :reduced
+    attr_accessor :sample, :maps, :reduce
     
-    def initialize(dir = "data", sample_file="sample.csv") 
+    def initialize(dir = "data", sample_file="data/sample.csv") 
 	@maps = []
-	@scenarios = []
-	@sample_file = File.join(dir,sample_file)	
+	@dir = dir
+        @scenarios = []
 	Dir.foreach(dir) do |file| 
-	    @scenarios << File.join(dir,file) if file.match('scenario') 
+	    @scenarios << file if file.match('scenario') 
 	end
+        @sample_file = sample_file
     end
     
     def run
 	@sample = Load.file(@sample_file)
-	@mapped = Hash.new
-	mapped = Parallel.map(@scenarios) { |scenario| [ scenario, Map.new(scenario, @sample).run] }
-	mapped.each { |result| @mapped[result.first] = result.last }
-	@reduced = Reduce.new(@mapped).run
+	@maps = Parallel.map(@scenarios) { |scenario| job = Map.new(@dir, scenario, @sample, L1.new); job.run; job }
+	@reduce = Reduce.new(@maps)
+        @reduce.run
     end
     
 end     
@@ -27,11 +27,13 @@ end
 
 class Map
     
-    def initialize(file_name, sample, measure = L1.new)
+    attr_accessor :result, :scenario
+
+    def initialize(scenario_dir, scenario, sample, measure = L1.new)
 	@sample = sample
 	@measure = measure
-	@file_name = file_name
-	@data = Load.file(file_name)
+	@scenario = scenario
+	@data = Load.file(File.join(scenario_dir, scenario))
     end
     
     def run
@@ -48,19 +50,21 @@ class Map
 		best_index = start_point
 	    end
 	end    
-	{:index => best_index, :value => best_value, :data => @data}
+	@result = {:index => best_index, :value => best_value, :data => @data}
     end
     
 end
 
 class Reduce 
     
-    def initialize(data)
-	@data = data
+    attr_accessor :result
+
+    def initialize(maps)
+	@maps = maps
     end
     
     def run 
-	@data.sort_by{ |entity| entity.last[:value] }.map { |entity| { entity.first => { :value => entity.last[:value], :index => entity.last[:index]}} } 
+	@result = @maps.sort_by{ |job| job.result[:value] }.map { |job| { :scenario=> job.scenario, :value => job.result[:value], :index => job.result[:index]} } 
     end
     
 end
