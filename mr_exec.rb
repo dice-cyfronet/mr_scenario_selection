@@ -10,15 +10,13 @@ Usage:
 DOCOPT
 
 begin
-
   opt = Docopt::docopt(doc)
-
   num = Integer(opt["<number_of_ouputs>"] || 10 )
   output = opt["<output_file>"] || "output.csv" 
-
+  
   mr = MapReduce.new(opt["<scenario_dir>"],opt["<sample_file>"])
   mr.run
-
+  
   File.open(output, 'w') do |file|
      i=0; 
      mr.reduce.result.each do |result| 
@@ -27,7 +25,6 @@ begin
        break if i>num 
      end
   end
-
 rescue Docopt::Exit => e
   puts e.message
 end
