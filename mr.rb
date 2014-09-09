@@ -80,13 +80,21 @@ class L1
     end
     
 end
- 
+
 class Load
-   
-    def self.file(name = "scenario.csv")
-	 matrix = []; 
-	 CSV.foreach(name) { |row| matrix <<  row.map{ |cell| cell.to_f} }
-	 matrix
+
+  def self.file(name)
+    matrix = []
+    i = 0
+    CSV.foreach(name) do |row|
+      if (i>0)
+        matrix <<  row.map { |cell| cell.to_f }
+      else 
+        i+=1
+      end
     end
-    
+    matrix
+  end
+
 end
+ 

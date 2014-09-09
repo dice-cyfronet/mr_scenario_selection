@@ -28,7 +28,8 @@ gen_param <- function(N, dt) {
     return(cbind(y, y1))
 }
 
-generate_single <- function(params, N, dt, file="scenario.csv", dfile="sim_measur.csv") {
+generate_single <- function(params_vector, N, dt, file="scenario.csv", dfile="sim_measur.csv") {
+    params = length(params_vector)
     ideal = matrix(nrow=N, ncol=params)
     distorted = matrix(nrow=N, ncol=params)
     for (i in 1:params) {
@@ -36,6 +37,8 @@ generate_single <- function(params, N, dt, file="scenario.csv", dfile="sim_measu
 	ideal[,i] = generated[,1]
 	distorted[,i] = generated[,2]
     }
+    ideal = rbind(params_vector,ideal)
+    distorted = rbind(params_vector, distorted)
     write.table(ideal, file = file, sep=", ", col.names = F, row.names = F)
     write.table(distorted, file = dfile, sep=", ", col.names = F, row.names = F)
 }
@@ -46,13 +49,13 @@ gen_scenarios <- function(scenarios, directory='data')  {
     for (i in 1:scenarios) {
 	file = paste(c(directory, '/scenario',i,'.csv'),collapse="")
 	dfile = paste(c(directory, '/sim_measur',i,'.csv'),collapse="")
-	generate_single(params, N, dt, file, dfile)
+	generate_single(params_vector, N, dt, file, dfile)
     }
 }
 
 N = 100 
 dt = 0.25 
-params = 5
+params_vector = (1:5)
 
 gen_scenarios(5)
 
