@@ -23,7 +23,6 @@ begin
   dap_token = opt["<dap_token>"]
 
   input_file = Tempfile.new('input')
-  output_file_path = input_file.path.sub("input", "output")
 
   connection = Faraday.new(url: "https://dap.moc.ismop.edu.pl", ssl: {verify: false}) do |faraday|
     faraday.request :url_encoded
@@ -91,8 +90,6 @@ begin
                     'scenario_id' => result[:scenario_id]
                 })
   end
-
-  File.delete(output_file_path)
 
   puts output
 
