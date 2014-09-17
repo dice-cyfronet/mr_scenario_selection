@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby 
 
 require 'docopt'
-load 'mr.rb'
+require_relative 'mr.rb'
 
 doc = <<DOCOPT
 Usage:
