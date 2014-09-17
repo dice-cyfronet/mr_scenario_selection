@@ -5,6 +5,7 @@ require 'csv'
 require 'faraday'
 require 'json'
 require 'tempfile'
+require_relative 'mr.rb'
 
 doc = <<DOCOPT
 Usage:
@@ -59,20 +60,19 @@ begin
   input_file.close
 #save to input file
 
-  `ruby #{mr_exec_path} #{data_dir} #{input_file.path} -o #{output_file_path}`
-
+  mr = MapReduce.new(data_dir,input_file.path)
+  mr.run
+  
 #read output, save it to dap
 
   input_file.unlink
 
-  output = []
-  i=0
-  CSV.foreach(output_file_path) do |row|
-
+  mr.reduce.result.each do |result|
+  
     result = {
-        :similarity => row[2].to_f,
+        :similarity => result[:value],
         :profile_id => profile_id.to_i,
-        :scenario_id => row[0].scan(/\d+/).first,
+        :scenario_id => result[:scenario].scan(/\d+/).first,
         :experiment_id => experiment_id
     }
 
