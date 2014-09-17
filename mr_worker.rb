@@ -67,6 +67,7 @@ begin
 
   input_file.unlink
 
+  output = []
   mr.reduce.result.each do |result|
   
     result = {
@@ -89,8 +90,6 @@ begin
                     'experiment_id' => result[:experiment_id],
                     'scenario_id' => result[:scenario_id]
                 })
-    i+=1
-
   end
 
   File.delete(output_file_path)
