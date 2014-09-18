@@ -53,11 +53,11 @@ gen_scenarios <- function(scenarios, directory='data')  {
     }
 }
 
-N = 100 
+N = 1000 
 dt = 0.25 
 params_vector = (1:5)
 
-gen_scenarios(5)
+gen_scenarios(1000)
 
 #generate_single(params, N, dt)
 

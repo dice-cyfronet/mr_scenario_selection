@@ -16,7 +16,7 @@ begin
   
   mr = MapReduce.new(opt["<scenario_dir>"],opt["<sample_file>"])
   mr.run
-  
+ 
   File.open(output, 'w') do |file|
      i=0; 
      mr.reduce.result.each do |result| 
