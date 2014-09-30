@@ -9,7 +9,7 @@ require_relative 'mr.rb'
 
 doc =<<DOCOPT
 Usage:                                                                                                                                                                                                                                                                         
-#{__FILE__} <profile_id> <experiment_id> <dap_token>                                                                                                                                                                                                                           
+#{__FILE__} <profile_id> <experiment_id> <dap_token> <date_from> <date_to>
 #{__FILE__} -h | --help                                                                                                                                                                                                                                                        
 DOCOPT
 
@@ -22,6 +22,8 @@ begin
   profile_id = opt["<profile_id>"]
   experiment_id = opt["<experiment_id>"]
   dap_token = opt["<dap_token>"]
+  date_from = opt["<date_from>"]
+  date_to = opt["<date_to>"]
 
   input_limit = 50 # TODO move this to request param
   output_limit = 10
@@ -44,6 +46,9 @@ begin
 
   response = connection.get do |req|
     req.url "/api/v1/measurements/"
+    req.params['time_from'] = date_from
+    req.params['time_to'] = date_to
+    # req.options.timeout = 10
   end
 
   meas = JSON.parse(response.body)['measurements']
