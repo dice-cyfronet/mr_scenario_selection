@@ -9,7 +9,7 @@ require_relative 'mr.rb'
 
 doc =<<DOCOPT
 Usage:                                                                                                                                                                                                                                                                         
-#{__FILE__} <profile_id> <experiment_id> <dap_token> <date_from> <date_to>
+#{__FILE__} <profile_id> <experiment_id> <dap_token> <dap_location> <date_from> <date_to>
 #{__FILE__} -h | --help                                                                                                                                                                                                                                                        
 DOCOPT
 
@@ -21,6 +21,7 @@ begin
 
   profile_id = opt["<profile_id>"]
   experiment_id = opt["<experiment_id>"]
+  dap_location = opt["<dap_location>"]
   dap_token = opt["<dap_token>"]
   date_from = opt["<date_from>"]
   date_to = opt["<date_to>"]
@@ -30,7 +31,7 @@ begin
 
   input_file = Tempfile.new('input')
 
-  connection = Faraday.new(url: "https://dap.moc.ismop.edu.pl", ssl: {verify: false}) do |faraday|
+  connection = Faraday.new(url: dap_location, ssl: {verify: false}) do |faraday|
     faraday.request :url_encoded
 #    faraday.response :logger
     faraday.adapter Faraday.default_adapter
