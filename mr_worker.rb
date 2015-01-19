@@ -49,6 +49,7 @@ begin
     req.url "/api/v1/measurements/"
     req.params['time_from'] = date_from
     req.params['time_to'] = date_to
+    req.params['sensor_id'] = sensor_ids
     # req.options.timeout = 10
   end
 
@@ -57,7 +58,7 @@ begin
   input = {}
   sensor_ids.each do |sensor_id|
     i = 0
-    input[sensor_id] = (meas.select { |m| m['sensor_id'] == sensor_id }).sort { |x, y| x['timestamp'] <=> y['timestamp'] }.reject! { |k| i+=1; i>50 }
+    input[sensor_id] = (meas.select { |m| m['timeline_id'] == sensor_id }).sort { |x, y| x['timestamp'] <=> y['timestamp'] }.reject! { |k| i+=1; i>50 }
   end
 
   input_file.write(sensor_ids.join(", ") + "\n")
