@@ -1,33 +1,37 @@
 #!/usr/bin/env ruby                                                                                                                                                                                                                                                            
-                                                                                                                                                                                                                                                                               
-require 'docopt'                                                                                                                                                                                                                                                               
-require 'csv'                                                                                                                                                                                                                                                                  
-require 'faraday'                                                                                                                                                                                                                                                              
-require 'json'                                                                                                                                                                                                                                                                 
-require 'tempfile'                                                                                                                                                                                                                                                             
-require_relative 'mr.rb'                                                                                                                                                                                                                                                       
-                                                                                                                                                                                                                                                                               
-doc =<<DOCOPT                                                                                                                                                                                                                                                                 
+
+require 'docopt'
+require 'csv'
+require 'faraday'
+require 'json'
+require 'tempfile'
+require_relative 'mr.rb'
+
+doc =<<DOCOPT
 Usage:                                                                                                                                                                                                                                                                         
-#{__FILE__} <profile_id> <experiment_id> <dap_token>                                                                                                                                                                                                                           
+#{__FILE__} <profile_id> <experiment_id> <dap_token> <dap_location> <date_from> <date_to>
 #{__FILE__} -h | --help                                                                                                                                                                                                                                                        
-DOCOPT                                                                                                                                                                                                                                                                         
-                                                                                                                                                                                                                                                                               
-data_dir = "/home/servers/scenarios"                                                                                                                                                                                                                                           
-mr_exec_path = "/home/servers/mr_scenario_selection/mr_exec.rb"                                                                                                                                                                                                                
-                                                                                                                                                                                                                                                                               
-begin                                                                                                                                                                                                                                                                          
-  opt = Docopt::docopt(doc)                                                                                                                                                                                                                                                    
-  profile_id = opt["<profile_id>"]                                                                                                                                                                                                                                             
-  experiment_id = opt["<experiment_id>"]                                                                                                                                                                                                                                       
-  dap_token = opt["<dap_token>"]                                                                                                                                                                                                                                               
-                                                                                                                                                                                                                                                                               
+DOCOPT
+
+data_dir = "/home/servers/scenarios"
+mr_exec_path = "/home/servers/mr_scenario_selection/mr_exec.rb"
+
+begin
+  opt = Docopt::docopt(doc)
+
+  profile_id = opt["<profile_id>"]
+  experiment_id = opt["<experiment_id>"]
+  dap_location = opt["<dap_location>"]
+  dap_token = opt["<dap_token>"]
+  date_from = opt["<date_from>"]
+  date_to = opt["<date_to>"]
+
   input_limit = 50 # TODO move this to request param
-  output_limit = 10 
+  output_limit = 10
 
   input_file = Tempfile.new('input')
 
-  connection = Faraday.new(url: "https://dap.moc.ismop.edu.pl", ssl: {verify: false}) do |faraday|
+  connection = Faraday.new(url: dap_location, ssl: {verify: false}) do |faraday|
     faraday.request :url_encoded
 #    faraday.response :logger
     faraday.adapter Faraday.default_adapter
@@ -43,14 +47,18 @@ begin
 
   response = connection.get do |req|
     req.url "/api/v1/measurements/"
+    req.params['time_from'] = date_from
+    req.params['time_to'] = date_to
+    req.params['sensor_id'] = sensor_ids
+    # req.options.timeout = 10
   end
 
   meas = JSON.parse(response.body)['measurements']
 
   input = {}
   sensor_ids.each do |sensor_id|
-    i = 0 
-    input[sensor_id] = (meas.select { |m| m['sensor_id'] == sensor_id}).sort {|x,y| x['timestamp'] <=> y['timestamp']}.reject!{ |k| i+=1; i>50 }
+    i = 0
+    input[sensor_id] = (meas.select { |m| m['timeline_id'] == sensor_id }).sort { |x, y| x['timestamp'] <=> y['timestamp'] }.reject! { |k| i+=1; i>50 }
   end
 
   input_file.write(sensor_ids.join(", ") + "\n")
@@ -64,7 +72,7 @@ begin
 
 #save to input file
 
-  mr = MapReduce.new(data_dir,input_file.path)
+  mr = MapReduce.new(data_dir, input_file.path)
   mr.run
 
 #read output, save it to dap
@@ -73,7 +81,7 @@ begin
 
   output = []
 
-  i = 0 
+  i = 0
   mr.reduce.result.each do |result|
 
     i += 1
@@ -88,7 +96,7 @@ begin
 
     response = connection.post do |req|
       req.url "/api/v1/results"
-      req.body = {:result => result }.to_json
+      req.body = {:result => result}.to_json
     end
 
     raise "Error while uploading results. Error code #{response.status}" unless response.status == 200
