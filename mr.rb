@@ -58,10 +58,14 @@ class Map
 	range = @data.length - @sample.length
 	best_value = Float::MAX
 	best_index = -1
+	len = @sample[0].length - 1
+	lenv2 = @sample.length.to_i -1 
 	for start_point in 0..range do
 	    value = 0
-	    for column in 0..@sample[0].length - 1 do
-		value += @measure.compare(@data, @sample, start_point, column)
+	    for column in 0..len do
+		for i in 0..lenv2 do
+		    value += (@data[start_point + i][column] - @sample[i][column]).abs 
+		end
 	    end
 	    if (value < best_value)
 		best_value = value
