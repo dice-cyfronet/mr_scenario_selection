@@ -13,8 +13,8 @@ Usage:
 #{__FILE__} -h | --help                                                                                                                                                                                                                                                        
 DOCOPT
 
-data_dir = "/home/servers/scenarios"
-mr_exec_path = "/home/servers/mr_scenario_selection/mr_exec.rb"
+data_dir = "/home/yaq/scenarios"
+mr_exec_path = "/home/yaq/mr_scenario_selection/mr_exec.rb"
 
 begin
   opt = Docopt::docopt(doc)
