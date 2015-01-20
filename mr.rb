@@ -1,29 +1,46 @@
 require 'parallel'
 require 'csv'
+require './serializer.rb'
 
 class MapReduce
     
     attr_accessor :sample, :maps, :reduce
     
-    def initialize(dir = "data", sample_file="data/sample.csv") 
+    def initialize(dir = "data", sample_file="data/sample.csv", mode = :bat) 
 	@maps = []
 	@dir = dir
         @scenarios = []
+	@mode = mode
+	pattern = (@mode == :bat ? '.bat' : 'scenario')
 	Dir.foreach(dir) do |file| 
-	    @scenarios << file if file.match('scenario') 
+	    @scenarios << file if file.match(pattern) 
 	end
         @sample_file = sample_file
     end
     
     def run
 	@sample = Load.file(@sample_file)
-	@maps = Parallel.map(@scenarios) { |scenario| job = Map.new(@dir, scenario, @sample, L1.new); job.run; job }
+	@maps = Parallel.map(@scenarios) do |scenario| 
+	    job = (@mode == :bat ? MapFromBinary.new(@dir, scenario, @sample, L1.new) : Map.new(@dir, scenario, @sample, L1.new))
+	    job.run; 
+	    job
+	end
 	@reduce = Reduce.new(@maps)
         @reduce.run
     end
     
+    def self.dump(dir = "data") 
+        scenarios = []
+	Dir.foreach(dir) do |file| 
+	    scenarios << file if file.match('scenario') 
+	end
+	Parallel.map(scenarios) { |scenario| 
+	    data = Load.file(File.join(dir, scenario))   
+	    Serializer.serialize(data, File.join(dir, "#{scenario}.bat"))
+	}                                  
+    end
+    
 end     
-
 
 class Map
     
@@ -51,6 +68,17 @@ class Map
 	    end
 	end    
 	@result = {:index => best_index, :value => best_value, :data => @data}
+    end
+    
+end
+
+class MapFromBinary < Map
+   
+    def initialize(scenario_dir, scenario, sample, measure = L1.new)
+	@sample = sample
+	@measure = measure
+	@scenario = scenario
+	@data = Serializer.deserialize(File.join(scenario_dir, scenario))
     end
     
 end
@@ -95,6 +123,22 @@ class Load
     end
     matrix
   end
+  
+  def self.dump(name)
+    matrix = []
+    i = 0
+    CSV.foreach(name) do |row|
+      if (i>0)
+        matrix <<  row.map { |cell| cell.to_f }
+      else 
+        i+=1
+      end
+    end
+    matrix
+  end
 
 end
  
+
+
+
