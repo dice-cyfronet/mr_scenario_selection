@@ -37,6 +37,7 @@ class MapReduce
 	Parallel.map(scenarios) { |scenario| 
 	    data = Load.file(File.join(dir, scenario))   
 	    Serializer.serialize(data, File.join(dir, "#{scenario}.bat"))
+	    "#{scenario}.bat"
 	}                                  
     end
     
