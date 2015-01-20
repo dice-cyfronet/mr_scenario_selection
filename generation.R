@@ -53,9 +53,9 @@ gen_scenarios <- function(scenarios, directory='data')  {
     }
 }
 
-N = 1000 
+N = 24*4*14 
 dt = 0.25 
-params_vector = (1:5)
+params_vector = (1:10)
 
 gen_scenarios(1000)
 
