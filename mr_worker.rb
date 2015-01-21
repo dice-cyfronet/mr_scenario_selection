@@ -25,8 +25,7 @@ begin
   dap_token = opt["<dap_token>"]
   date_from = opt["<date_from>"]
   date_to = opt["<date_to>"]
-
-  input_limit = 500 # TODO move this to request param
+  
   output_limit = 10
 
   input_file = Tempfile.new('input')
@@ -57,8 +56,7 @@ begin
 
   input = {}
   sensor_ids.each do |sensor_id|
-    i = 0
-    input[sensor_id] = (meas.select { |m| m['timeline_id'] == sensor_id }).sort { |x, y| x['timestamp'] <=> y['timestamp'] }.reject! { |k| i+=1; i>input_limit }
+    input[sensor_id] = (meas.select { |m| m['timeline_id'] == sensor_id }).sort { |x, y| x['timestamp'] <=> y['timestamp'] }
   end
 
   input_file.write(sensor_ids.join(", ") + "\n")
