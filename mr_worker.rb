@@ -11,14 +11,11 @@ Usage:
 #{__FILE__} -h | --help                                                                                                                                                                                                                                                        
 DOCOPT
 
-# ranking = "/home/servers/scenario_ranking/scenario_ranking"
-# scenario_location = "/home/servers/scenario_ranking/data/"
-# input_file_location = "/home/servers/scenario_ranking/data/sample.csv"
-# output_file_location = "/home/servers/scenario_ranking/data/output.txt"
 ranking = "/home/yaq/scenario_ranking/scenario_ranking"
-scenario_location = "/home/yaq/scenario_ranking/data/"
-input_file_location = "/home/yaq/scenario_ranking/work/sample.csv"
-output_file_location = "/home/yaq/scenario_ranking/work/output.txt"
+scenario_location = "/home/yaq/scenarios/"
+work_dir = "/home/yaq/scenario_ranking/work/"
+input_file_location = "#{work_dir}sample.csv"
+output_file_location = "#{work_dir}output.txt"
 
 #dirs
 
@@ -75,31 +72,28 @@ begin
 
   #execute scenario_ranking
 
-  IO.popen(ranking, "r+") do |pipe|
+  IO.popen("#{ranking} #{scenario_location} #{work_dir}", "r+") do |pipe|
     output = pipe.read
 
-    puts "output: #{output}"
     pipe.close
     $?.to_i
   end
 
-  output = []
+  ranks = []
   output_file = File.open(output_file_location, "r") do |file|
-    lines = f.readlines
-    puts lines
+    lines = file.readlines.first(10)
+    ranks = lines
   end
 
-  i = 0
-  mr.reduce.result.each do |result|
+  output = []
 
-    i += 1
-    break if i>output_limit
-
+  ranks.each do |rank|
+    rank_s = rank.split
     result = {
-        :similarity => result[:value],
+        :similarity => rank_s[1],
         :profile_id => profile_id.to_i,
-        :scenario_id => result[:scenario].scan(/\d+/).first,
-        :experiment_id => experiment_id
+        :scenario_id => rank_s[0].to_i,
+        :experiment_id => experiment_id.to_i
     }
 
     response = connection.post do |req|
