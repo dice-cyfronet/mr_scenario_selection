@@ -107,7 +107,7 @@ begin
                     'similarity' => result[:similarity],
                     'profile_id' => result[:profile_id],
                     'experiment_id' => result[:experiment_id],
-                    'scenario_id' => result[:scenario_id]
+                    'scenario_id' => result[:scenario_id]+1
                 })
   end
 
