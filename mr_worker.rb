@@ -4,8 +4,6 @@ require 'docopt'
 require 'csv'
 require 'faraday'
 require 'json'
-require 'tempfile'
-require_relative 'mr.rb'
 
 doc =<<DOCOPT
 Usage:                                                                                                                                                                                                                                                                         
@@ -13,8 +11,16 @@ Usage:
 #{__FILE__} -h | --help                                                                                                                                                                                                                                                        
 DOCOPT
 
-data_dir = "/home/servers/scenarios"
-mr_exec_path = "/home/servers/mr_scenario_selection/mr_exec.rb"
+# ranking = "/home/servers/scenario_ranking/scenario_ranking"
+# scenario_location = "/home/servers/scenario_ranking/data/"
+# input_file_location = "/home/servers/scenario_ranking/data/sample.csv"
+# output_file_location = "/home/servers/scenario_ranking/data/output.txt"
+ranking = "/home/yaq/scenario_ranking/scenario_ranking"
+scenario_location = "/home/yaq/scenario_ranking/data/"
+input_file_location = "/home/yaq/scenario_ranking/work/sample.csv"
+output_file_location = "/home/yaq/scenario_ranking/work/output.txt"
+
+#dirs
 
 begin
   opt = Docopt::docopt(doc)
@@ -27,8 +33,6 @@ begin
   date_to = opt["<date_to>"]
   
   output_limit = 10
-
-  input_file = Tempfile.new('input')
 
   connection = Faraday.new(url: dap_location, ssl: {verify: false}) do |faraday|
     faraday.request :url_encoded
@@ -59,25 +63,31 @@ begin
     input[sensor_id] = (meas.select { |m| m['timeline_id'] == sensor_id }).sort { |x, y| x['timestamp'] <=> y['timestamp'] }
   end
 
-  input_file.write(sensor_ids.join(", ") + "\n")
-  begin
-    (input[sensor_ids[0]].length).times do |i|
-      line_vals = sensor_ids.collect { |id| input[id][i]['value'] }
-      input_file.write(line_vals.join(", ") + "\n")
+  File.open(input_file_location, "w") do |input_file|
+    input_file.write(sensor_ids.join(", ") + "\n")
+    begin
+      (input[sensor_ids[0]].length).times do |i|
+        line_vals = sensor_ids.collect { |id| input[id][i]['value'] }
+        input_file.write(line_vals.join(", ") + "\n")
+      end
     end
   end
-  input_file.close
 
-#save to input file
+  #execute scenario_ranking
 
-  mr = MapReduce.new(data_dir, input_file.path)
-  mr.run
+  IO.popen(ranking, "r+") do |pipe|
+    output = pipe.read
 
-#read output, save it to dap
-
-  input_file.unlink
+    puts "output: #{output}"
+    pipe.close
+    $?.to_i
+  end
 
   output = []
+  output_file = File.open(output_file_location, "r") do |file|
+    lines = f.readlines
+    puts lines
+  end
 
   i = 0
   mr.reduce.result.each do |result|
