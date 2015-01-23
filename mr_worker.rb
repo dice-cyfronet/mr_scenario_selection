@@ -57,7 +57,7 @@ begin
 
   input = {}
   sensor_ids.each do |sensor_id|
-    input[sensor_id] = (meas.select { |m| m['timeline_id'] == sensor_id }).sort { |x, y| x['timestamp'] <=> y['timestamp'] }
+    input[sensor_id] = (meas.select { |m| m['sensor_id'] == sensor_id }).sort { |x, y| x['timestamp'] <=> y['timestamp'] }
   end
 
   File.open(input_file_location, "w") do |input_file|
