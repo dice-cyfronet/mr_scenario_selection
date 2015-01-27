@@ -92,7 +92,7 @@ begin
     result = {
         :similarity => rank_s[1],
         :profile_id => profile_id.to_i,
-        :scenario_id => rank_s[0].to_i,
+        :scenario_id => rank_s[0].to_i + 1,
         :experiment_id => experiment_id.to_i
     }
 
