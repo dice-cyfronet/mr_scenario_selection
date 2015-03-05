@@ -7,7 +7,7 @@ require 'json'
 
 doc =<<DOCOPT
 Usage:                                                                                                                                                                                                                                                                         
-#{__FILE__} <profile_id> <experiment_id> <dap_token> <dap_location> <date_from> <date_to>
+#{__FILE__} <section_id> <experiment_id> <dap_token> <dap_location> <date_from> <date_to>
 #{__FILE__} -h | --help                                                                                                                                                                                                                                                        
 DOCOPT
 
@@ -22,7 +22,7 @@ output_file_location = "#{work_dir}output.txt"
 begin
   opt = Docopt::docopt(doc)
 
-  profile_id = opt["<profile_id>"]
+  section_id = opt["<section_id>"]
   experiment_id = opt["<experiment_id>"]
   dap_location = opt["<dap_location>"]
   dap_token = opt["<dap_token>"]
@@ -40,10 +40,10 @@ begin
   end
 
   response = connection.get do |req|
-    req.url "/api/v1/profiles/#{profile_id}"
+    req.url "/api/v1/sections/#{section_id}"
   end
 
-  sensor_ids = JSON.parse(response.body)['profile']['sensor_ids'].sort
+  sensor_ids = JSON.parse(response.body)['sections']['sensor_ids'].sort
 
   response = connection.get do |req|
     req.url "/api/v1/measurements/"
@@ -91,7 +91,7 @@ begin
     rank_s = rank.split
     result = {
         :similarity => rank_s[1],
-        :profile_id => profile_id.to_i,
+        :section_id => section_id.to_i,
         :scenario_id => rank_s[0].to_i + 1,
         :experiment_id => experiment_id.to_i
     }
@@ -105,7 +105,7 @@ begin
 
     output.push({
                     'similarity' => result[:similarity],
-                    'profile_id' => result[:profile_id],
+                    'section_id' => result[:section_id],
                     'experiment_id' => result[:experiment_id],
                     'scenario_id' => result[:scenario_id]+1
                 })
