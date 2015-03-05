@@ -40,7 +40,8 @@ begin
   end
 
   response = connection.get do |req|
-    req.url "/api/v1/sections/#{section_id}"
+    req.url 'api/v1/sections/'
+    req.params['id'] = section_id
   end
 
   sensor_ids = JSON.parse(response.body)['sections']['sensor_ids'].sort
