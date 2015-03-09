@@ -107,8 +107,8 @@ begin
     output.push({
                     'similarity' => result[:similarity],
                     'section_id' => result[:section_id],
-                    'experiment_id' => result[:experiment_id],
-                    'threat_assessment_id' => result[:threat_assessment_id]
+                    'threat_assessment_id' => result[:threat_assessment_id],
+                    'scenario_id' => result[:scenario_id]+1
                 })
   end
 
