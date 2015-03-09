@@ -93,8 +93,8 @@ begin
     result = {
         :similarity => rank_s[1],
         :section_id => section_id.to_i,
-        :threat_assessment_id => rank_s[0].to_i + 1,
-        :experiment_id => experiment_id.to_i
+        :threat_assessment_id => experiment_id.to_i,
+        :scenario_id => rank_s[0].to_i + 1
     }
 
     response = connection.post do |req|
@@ -108,7 +108,7 @@ begin
                     'similarity' => result[:similarity],
                     'section_id' => result[:section_id],
                     'threat_assessment_id' => result[:threat_assessment_id],
-                    'scenario_id' => result[:scenario_id]+1
+                    'scenario_id' => result[:scenario_id]
                 })
   end
 
